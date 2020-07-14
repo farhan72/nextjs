@@ -1,0 +1,23 @@
+.login-form {
+  padding: 10px !important;
+  background-color: #dddddd;
+  max-width: 300px;
+  margin: auto !important;
+  transform: translateY(60%);
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700 !important;
+    text-align: center;
+  }
+}
+.login-form-button {
+  width: 100%;
+}
+
+@media (min-width: 992px) {
+  .login-form {
+    max-width: 400px;
+    transform: translateY(100%);
+  }
+}
