@@ -4,8 +4,13 @@
   "private": true,
   "dependencies": {
     "@material-ui/core": "latest",
+    "@svgr/webpack": "^5.4.0",
+    "@zeit/next-sass": "^1.0.1",
+    "antd": "^4.4.2",
+    "axios": "^0.19.2",
     "clsx": "latest",
     "next": "latest",
+    "node-sass": "^4.14.1",
     "prop-types": "latest",
     "react": "latest",
     "react-dom": "latest"
@@ -15,5 +20,9 @@
     "build": "next build",
     "start": "next start",
     "post-update": "echo \"codesandbox preview only, need an update\" && yarn upgrade --latest"
+  },
+  "devDependencies": {
+    "@ant-design/icons": "^4.2.1",
+    "webpack": "^4.43.0"
   }
 }
