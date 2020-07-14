@@ -9,7 +9,7 @@ import Link from "../src/Link";
 
 export default function Login() {
   const [isLoading, setLoading] = useState(false);
-  const [isLogin, setLogin] = useState(true);
+  const [isLogin, setLogin] = useState(false);
   const [messageError, setMessageError] = useState("");
 
   const login = async (values) => {
@@ -18,35 +18,46 @@ export default function Login() {
       password: values.password,
     };
     setLoading(true);
-    methodPost(loginEndpoint, request)
-      .then((res) => {
-        const data = res.data;
-        if (data) {
-          localStorage.setItem("token", data.token);
-          localStorage.setItem("user", JSON.stringify(data.user));
-          setLogin(true);
-        }
-      })
-      .catch((error) => {
+    fecthAPI(request);
+  };
+
+  const fecthAPI = (request) => {
+    const response = methodPost(loginEndpoint, request);
+    setLoading(true);
+    response.then((res) => {
+      const data = res.data;
+      if (data && data.token) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        setLogin(true);
+        Router.push("/");
+      }
+    });
+    response
+      .catch((e) => {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         setLogin(false);
-        if (error.response.data == "Unable to login") {
-          setMessageError("Username or password is wrong!");
-        } else {
-          setMessageError("Something was Wrong!");
-        }
+        setMessage(e);
       })
       .finally(() => setLoading(false));
   };
 
+  const setMessage = (error) => {
+    if (error.response.data == "Unable to login") {
+      setMessageError("Username or password is wrong!");
+    } else {
+      setMessageError("Something was Wrong!");
+    }
+  };
+
   useEffect(() => {
     setTimeout(() => setMessageError(""), 6000);
-  });
+  }, []);
 
-  return (
+  return !isLogin ? (
     <div className="login-container">
-      <Form onFinish={login} className="login-form">
+      <Form onFinish={(values) => login(values)} className="login-form">
         <h2>Login</h2>
         <Form.Item
           name="email"
@@ -99,7 +110,9 @@ export default function Login() {
           </div>
         </Form.Item>
       </Form>
-      <Loader isShow={isLoading} />
+      {/* <Loader isShow={isLoading} /> */}
     </div>
+  ) : (
+    ""
   );
 }
