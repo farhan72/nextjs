@@ -1,16 +1,34 @@
 import React, { useEffect, useState } from "react";
 import Container from "@material-ui/core/Container";
 import Typography from "@material-ui/core/Typography";
-import Box from "@material-ui/core/Box";
+import { Box, Button } from "@material-ui/core";
 import Link from "../src/Link";
+import Cookies from "js-cookie";
 import Router from "next/router";
 
 export default function Index() {
-  const [isLogin, setLogin] = useState(false);
+  const [isAuthenticated, setAuthenticated] = useState(true);
+
+  const logout = () => {
+    Cookies.remove("token");
+    Router.push("/");
+  };
+
+  useEffect(() => {
+    const token = Cookies.get("token");
+    if (!token) {
+      setAuthenticated(false);
+      Router.push("/login");
+    }
+  });
+
   const renderData = () => {
     return (
       <Container maxWidth="sm">
         <Box my={4}>
+          <Button variant="contained" color="primary" onClick={() => logout()}>
+            Logout
+          </Button>
           <Typography variant="h4" component="h1" gutterBottom>
             Zyada Corp. Frontend Challenge
           </Typography>
@@ -22,12 +40,5 @@ export default function Index() {
     );
   };
 
-  useEffect(() => {
-    setLogin(true);
-    if (!localStorage.getItem("token")) {
-      setLogin(false);
-      Router.push("/login");
-    }
-  });
-  return isLogin ? renderData() : "";
+  return isAuthenticated ? renderData() : "";
 }

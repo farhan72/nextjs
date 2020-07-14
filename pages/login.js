@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Form, Input, Button, Alert } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
+import Cookies from "js-cookie";
 import { loginEndpoint } from "../common/path";
-import { methodPost } from "../common/configApi";
+import configApi from "../common/configApi";
 import Router from "next/router";
 import Loader from "../libraries/loader";
 import Link from "../src/Link";
 
 export default function Login() {
   const [isLoading, setLoading] = useState(false);
-  const [isLogin, setLogin] = useState(false);
   const [messageError, setMessageError] = useState("");
+  const [token, setToken] = useState("");
 
   const login = async (values) => {
     const request = {
@@ -21,41 +22,46 @@ export default function Login() {
     fecthAPI(request);
   };
 
-  const fecthAPI = (request) => {
-    const response = methodPost(loginEndpoint, request);
+  const fecthAPI = async (request) => {
     setLoading(true);
-    response.then((res) => {
-      const data = res.data;
+    try {
+      const response = await configApi.post(loginEndpoint, request);
+      const data = response.data;
       if (data && data.token) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        setLogin(true);
+        setLoading(false);
+        setAuth(data);
         Router.push("/");
       }
-    });
-    response
-      .catch((e) => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        setLogin(false);
-        setMessage(e);
-      })
-      .finally(() => setLoading(false));
+    } catch (error) {
+      setLoading(false);
+      setMessage(error);
+    }
+  };
+
+  const setAuth = (data) => {
+    Cookies.set("token", data.token, { expires: 1 });
+    setToken(Cookies.get("token"));
+    configApi.defaults.headers.Authorization = `Bearer ${token}`;
+    localStorage.setItem("user", JSON.stringify(data.user));
   };
 
   const setMessage = (error) => {
     if (error.response.data == "Unable to login") {
       setMessageError("Username or password is wrong!");
     } else {
-      setMessageError("Something was Wrong!");
+      setMessageError("Something was wrong!");
     }
   };
 
   useEffect(() => {
     setTimeout(() => setMessageError(""), 6000);
-  }, []);
+    setToken(Cookies.get("token"));
+    return () => {
+      if (token) Router.push("/");
+    };
+  });
 
-  return !isLogin ? (
+  return (
     <div className="login-container">
       <Form onFinish={(values) => login(values)} className="login-form">
         <h2>Login</h2>
@@ -112,7 +118,5 @@ export default function Login() {
       </Form>
       {/* <Loader isShow={isLoading} /> */}
     </div>
-  ) : (
-    ""
   );
 }
